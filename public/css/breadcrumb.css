@@ -1,0 +1,15 @@
+.breadcrumbs {
+     width: 100%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 10px;
+}
+.breadcrumbs li{
+   color: #fff;
+}
+.breadcrumbs li:not(:last-child)::after {
+    content: "-";
+    color: #fff;
+    margin-left: 10px;
+}

@@ -3,24 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Appointment extends Model
 {
-    protected $fillable = ['user_id', 'doctor_id', 'time_slot_id', 'status', 'notes'];
+    protected $fillable = ['name', 'phone', 'date', 'time', 'team_id', 'service_id', 'status'];
 
-    public function user(): BelongsTo
+    public function team()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Team::class, 'team_id');
     }
 
-    public function doctor(): BelongsTo
+    public function service()
     {
-        return $this->belongsTo(Doctor::class);
-    }
-
-    public function timeSlot(): BelongsTo
-    {
-        return $this->belongsTo(TimeSlot::class);
+        return $this->belongsTo(Service::class, 'service_id');
     }
 }

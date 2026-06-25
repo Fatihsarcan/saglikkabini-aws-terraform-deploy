@@ -31,21 +31,5 @@ variable "db_password" {
 variable "app_key" {
   description = "Laravel APP_KEY"
   sensitive   = true
-  default     = ""
-}
-
-variable "ses_domain" {
-  description = "SES için verify edilecek domain (ör: saglik.example.com)"
-  default     = "saglik.example.com"
-}
-
-variable "ses_from_address" {
-  description = "Maillerden gönderilecek adres"
-  default     = "noreply@saglik.example.com"
-}
-
-variable "bedrock_api_token" {
-  description = "Laravel Sanctum token (php artisan bedrock:token ile üretilir)"
-  sensitive   = true
-  default     = ""
+  default     = "base64:KDVGvjzhrsLPDzRYPXj4z+YHNftQ+Nry9safyRTWY5U="
 }

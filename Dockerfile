@@ -38,4 +38,4 @@ COPY docker/nginx.conf /etc/nginx/sites-enabled/default
 
 EXPOSE 80
 
-CMD service nginx start && php artisan migrate --force && php artisan storage:link && php-fpm
+CMD service nginx start && php-fpm

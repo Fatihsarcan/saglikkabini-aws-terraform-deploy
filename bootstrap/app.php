@@ -1,6 +1,9 @@
 <?php
 
+use Carbon\Carbon;
 use Illuminate\Foundation\Application;
+use App\Http\Middleware\MainMiddleware;
+use App\Http\Middleware\SetLocaleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -13,8 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'setLocale' => SetLocaleMiddleware::class,
+            'mainSettings' => MainMiddleware::class,
         ]);
+
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

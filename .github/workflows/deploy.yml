@@ -1,50 +1,41 @@
-name: Deploy
+name: Deploy to AWS
 
 on:
   push:
-    branches: [master]
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REPOSITORY: laravel-saglik
+  ASG_NAME: laravel-saglik-asg
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::290971954748:role/github-actions-role
-          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push Docker image
+      - name: Build, tag, and push image to ECR
         env:
-          ECR_REPO: 290971954748.dkr.ecr.eu-central-1.amazonaws.com/laravel-saglik
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REPO:$IMAGE_TAG .
-          docker push $ECR_REPO:$IMAGE_TAG
-          docker tag $ECR_REPO:$IMAGE_TAG $ECR_REPO:latest
-          docker push $ECR_REPO:latest
-
-      - name: Package and deploy Lambda
-        run: |
-          cd lambda
-          zip -r ../bedrock_action.zip .
-          aws lambda update-function-code \
-            --function-name laravel-saglik-bedrock-action \
-            --zip-file fileb://../bedrock_action.zip \
-            --region eu-central-1
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Trigger ASG instance refresh
-        run: |
-          aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name laravel-saglik-asg \
-            --preferences '{"MinHealthyPercentage":100}' \
-            --region eu-central-1
+        run: aws autoscaling start-instance-refresh --auto-scaling-group-name $ASG_NAME --region $AWS_REGION
