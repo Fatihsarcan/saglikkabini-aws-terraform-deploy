@@ -1,0 +1,50 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::290971954748:role/github-actions-role
+          aws-region: eu-central-1
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REPO: 290971954748.dkr.ecr.eu-central-1.amazonaws.com/laravel-saglik
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REPO:$IMAGE_TAG .
+          docker push $ECR_REPO:$IMAGE_TAG
+          docker tag $ECR_REPO:$IMAGE_TAG $ECR_REPO:latest
+          docker push $ECR_REPO:latest
+
+      - name: Package and deploy Lambda
+        run: |
+          cd lambda
+          zip -r ../bedrock_action.zip .
+          aws lambda update-function-code \
+            --function-name laravel-saglik-bedrock-action \
+            --zip-file fileb://../bedrock_action.zip \
+            --region eu-central-1
+
+      - name: Trigger ASG instance refresh
+        run: |
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name laravel-saglik-asg \
+            --preferences '{"MinHealthyPercentage":100}' \
+            --region eu-central-1

@@ -1,0 +1,143 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Sağlık Kabini Randevu API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/doctors": {
+      "get": {
+        "operationId": "listDoctors",
+        "description": "Kliniğdeki aktif doktorları uzmanlık alanlarıyla birlikte listeler.",
+        "responses": {
+          "200": {
+            "description": "Doktor listesi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "name": { "type": "string" },
+                          "specialty": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/doctors/{doctorId}/slots": {
+      "get": {
+        "operationId": "getAvailableSlots",
+        "description": "Belirtilen doktor için belirli bir tarihte veya haftada müsait randevu saatlerini getirir.",
+        "parameters": [
+          {
+            "name": "doctorId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Doktor ID'si"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" },
+            "description": "Sorgulanacak tarih (YYYY-MM-DD formatında)"
+          },
+          {
+            "name": "week",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" },
+            "description": "True ise haftanın tüm müsait slotlarını getirir"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Müsait slotlar"
+          }
+        }
+      }
+    },
+    "/appointments": {
+      "post": {
+        "operationId": "bookAppointment",
+        "description": "Hasta için randevu oluşturur. Önce doktor listesini ve slotları sorgulamalısın.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["doctor_id", "slot_id", "patient_name", "patient_email"],
+                "properties": {
+                  "doctor_id": { "type": "integer", "description": "Doktor ID'si" },
+                  "slot_id": { "type": "integer", "description": "Seçilen slot ID'si" },
+                  "patient_name": { "type": "string", "description": "Hasta adı soyadı" },
+                  "patient_email": { "type": "string", "description": "Hastanın email adresi" },
+                  "notes": { "type": "string", "description": "İsteğe bağlı hasta notu" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Randevu oluşturuldu"
+          }
+        }
+      }
+    },
+    "/appointments/{id}/cancel": {
+      "post": {
+        "operationId": "cancelAppointment",
+        "description": "Belirtilen randevuyu iptal eder.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Randevu ID'si"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Randevu iptal edildi"
+          }
+        }
+      }
+    },
+    "/appointments/{id}": {
+      "get": {
+        "operationId": "getAppointment",
+        "description": "Belirli bir randevunun detaylarını getirir.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" },
+            "description": "Randevu ID'si"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Randevu detayları"
+          }
+        }
+      }
+    }
+  }
+}

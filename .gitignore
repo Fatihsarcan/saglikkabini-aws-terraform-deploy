@@ -18,3 +18,17 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/.history
+
+# Terraform state - hassas bilgiler
+/terraform/.terraform/
+/terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup
+/terraform/terraform.tfvars
+/terraform/.terraform.lock.hcl
+
+# Lambda build artifacts
+/lambda/bedrock_action.zip
+
+# Database
+/database/database.sqlite
